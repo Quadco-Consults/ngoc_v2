@@ -1,14 +1,11 @@
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { RefObject, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import useGasAssetsDataSource from '../../hooks/useGasAssetsDataSource';
 import useFlyToCoordinates from '../../hooks/useFlyToCoordinates';
 import { setGasPlants, setAGGStations, setGasPipelines, setPowerStations } from '../../store/gasAssetsSlice';
-import { gasPlantsData } from '../../data/gas-plants';
-import { aggStationsData } from '../../data/agg-stations';
-import { gasPipelinesData } from '../../data/gas-pipelines';
-import { powerStationsData } from '../../data/power-stations';
+
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
@@ -28,7 +25,6 @@ export default function PipelineNetworkMap() {
 
   const [isMapLoaded, setMapLoaded] = useState(false);
   const [isMapStyleLoaded, setMapStyleLoaded] = useState(false);
-  const [popUpDetails, setPopUpDetails] = useState<{ e: mapboxgl.MapMouseEvent; asset: any } | null>(null);
 
   const flyToCoordinates = useFlyToCoordinates(mapRef);
 
@@ -98,7 +94,6 @@ export default function PipelineNetworkMap() {
 
     map.on('click', () => {
       mapPopupRef.current?.remove();
-      setPopUpDetails(null);
     });
 
     return () => {
@@ -119,7 +114,7 @@ export default function PipelineNetworkMap() {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
 
-    setPopUpDetails({ e, asset });
+
 
     if (mapPopupRef.current) {
       const popupHTML = `

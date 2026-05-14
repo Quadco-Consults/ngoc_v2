@@ -1,4 +1,4 @@
-import { Feature, FeatureCollection, Point, LineString } from 'geojson';
+import { type Feature, type FeatureCollection, type Point, type LineString } from 'geojson';
 import type { GasPlant, AGGStation, GasPipeline, PowerStation } from '../types/gas-assets';
 
 // Validate coordinates

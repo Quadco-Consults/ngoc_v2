@@ -1,8 +1,7 @@
 import PipelineNetworkMap from '../../modules/network/PipelineNetworkMap';
-import type { AGGStation } from '../../types/gas-assets';
 
 interface AGGStationsMapProps {
-  stations: AGGStation[];
+  stations?: any[];
   height?: string;
 }
 

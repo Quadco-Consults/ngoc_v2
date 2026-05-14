@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Workflow, MapPin, Activity, AlertCircle } from 'lucide-react';
+import { Workflow, Activity, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import Button from '../../components/shared/Button';
 import StatsCard from '../../components/shared/StatsCard';
