@@ -8,7 +8,7 @@ interface BaseFieldProps {
 }
 
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement>, BaseFieldProps {
-  type?: 'text' | 'email' | 'password' | 'number' | 'date' | 'time' | 'datetime-local';
+  type?: 'text' | 'email' | 'password' | 'number' | 'date' | 'time' | 'datetime-local' | 'tel';
 }
 
 interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement>, BaseFieldProps {

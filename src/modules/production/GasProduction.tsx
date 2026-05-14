@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Download, Upload, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Download } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import Button from '../../components/shared/Button';
 import SearchAndFilter from '../../components/shared/SearchAndFilter';

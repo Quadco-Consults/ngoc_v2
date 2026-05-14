@@ -133,6 +133,7 @@ export interface CompressionStation {
   fuelGasConsumption: number; // MMSCF/D
   status: FacilityStatus;
   efficiency: number;         // percentage
+  remark?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -151,6 +152,7 @@ export interface MeteringStation {
   nextCalibration: string;
   accuracy: number;           // percentage
   status: FacilityStatus;
+  remark?: string;
   createdAt?: string;
   updatedAt?: string;
 }
