@@ -417,7 +417,7 @@ export default function GasBalancing() {
               label="Imbalance Type"
               required
               value={formData.imbalanceType || ''}
-              onChange={(e) => setFormData({ ...formData, imbalanceType: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, imbalanceType: e.target.value as GasBalance['imbalanceType'] })}
               options={[
                 { value: 'Surplus', label: 'Surplus' },
                 { value: 'Deficit', label: 'Deficit' },

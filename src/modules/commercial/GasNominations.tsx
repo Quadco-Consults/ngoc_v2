@@ -21,6 +21,7 @@ interface GasNomination {
   status: 'Pending' | 'Confirmed' | 'Delivered' | 'Rejected';
   priority: 'High' | 'Medium' | 'Low';
   deliveryPoint: string;
+  remarks?: string;
 }
 
 // Mock data
@@ -276,7 +277,7 @@ export default function GasNominations() {
               label="Priority"
               required
               value={formData.priority || ''}
-              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, priority: e.target.value as GasNomination['priority'] })}
               options={[
                 { value: 'High', label: 'High Priority' },
                 { value: 'Medium', label: 'Medium Priority' },

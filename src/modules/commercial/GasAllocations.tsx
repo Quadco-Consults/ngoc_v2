@@ -347,7 +347,7 @@ export default function GasAllocations() {
               label="Sector"
               required
               value={formData.sector || ''}
-              onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, sector: e.target.value as GasAllocation['sector'] })}
               options={[
                 { value: 'Power', label: 'Power Sector' },
                 { value: 'Industrial', label: 'Industrial' },

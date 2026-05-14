@@ -315,7 +315,7 @@ export default function LNGTerminals() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as LNGTerminal['status'] })}
               options={[
                 { value: 'Operational', label: 'Operational' },
                 { value: 'Maintenance', label: 'Under Maintenance' },
@@ -421,7 +421,7 @@ export default function LNGTerminals() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as LNGTerminal['status'] })}
               options={[
                 { value: 'Operational', label: 'Operational' },
                 { value: 'Maintenance', label: 'Under Maintenance' },

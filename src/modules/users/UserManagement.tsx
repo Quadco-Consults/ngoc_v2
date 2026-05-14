@@ -312,7 +312,7 @@ export default function UserManagement() {
               label="Role"
               required
               value={formData.role || ''}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
               options={[
                 { value: 'Admin', label: 'Administrator' },
                 { value: 'Manager', label: 'Manager' },
@@ -324,7 +324,7 @@ export default function UserManagement() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as User['status'] })}
               options={[
                 { value: 'Active', label: 'Active' },
                 { value: 'Inactive', label: 'Inactive' },
@@ -381,7 +381,7 @@ export default function UserManagement() {
               label="Role"
               required
               value={formData.role || ''}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
               options={[
                 { value: 'Admin', label: 'Administrator' },
                 { value: 'Manager', label: 'Manager' },
@@ -393,7 +393,7 @@ export default function UserManagement() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as User['status'] })}
               options={[
                 { value: 'Active', label: 'Active' },
                 { value: 'Inactive', label: 'Inactive' },

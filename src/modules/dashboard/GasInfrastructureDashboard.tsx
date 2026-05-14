@@ -49,13 +49,7 @@ export default function GasInfrastructureDashboard() {
   // Sort by installed capacity
   capacityByOperator.sort((a, b) => b.installed - a.installed);
 
-  // Status distribution
-  const statusData = [
-    { name: 'Plants Operational', value: operationalPlants, color: '#10b981' },
-    { name: 'Plants Offline', value: gasPlants.length - operationalPlants, color: '#6b7280' },
-    { name: 'Pipelines Operational', value: operationalPipelines, color: '#3b82f6' },
-    { name: 'Pipelines Offline', value: gasPipelines.length - operationalPipelines, color: '#9ca3af' },
-  ];
+  // Status distribution (unused variable removed)
 
   // Delivery market distribution
   const deliveryMarkets = gasPlants.reduce((acc, plant) => {

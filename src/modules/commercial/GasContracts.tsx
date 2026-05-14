@@ -425,7 +425,7 @@ export default function GasContracts() {
               label="Contract Type"
               required
               value={formData.contractType || ''}
-              onChange={(e) => setFormData({ ...formData, contractType: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, contractType: e.target.value as GasContract['contractType'] })}
               options={[
                 { value: 'GSA', label: 'Gas Sales Agreement (GSA)' },
                 { value: 'GSPA', label: 'Gas Sales & Purchase Agreement (GSPA)' },
@@ -437,7 +437,7 @@ export default function GasContracts() {
               label="Sector"
               required
               value={formData.sector || ''}
-              onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, sector: e.target.value as GasContract['sector'] })}
               options={[
                 { value: 'Power', label: 'Power Sector' },
                 { value: 'Industrial', label: 'Industrial' },
@@ -531,7 +531,7 @@ export default function GasContracts() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as GasContract['status'] })}
               options={[
                 { value: 'Active', label: 'Active' },
                 { value: 'Expired', label: 'Expired' },

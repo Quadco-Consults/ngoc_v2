@@ -212,7 +212,7 @@ export default function OperationsDashboard() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ status, count }) => `${status}: ${count}`}
+                label={(entry) => `${(entry as any).status || (entry as any).name}: ${(entry as any).count ?? (entry as any).value}`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="count"

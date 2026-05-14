@@ -401,7 +401,7 @@ export default function PowerStations() {
               label="Fuel Type"
               required
               value={formData.fuelType || ''}
-              onChange={(e) => setFormData({ ...formData, fuelType: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, fuelType: e.target.value as PowerStation['fuelType'] })}
               options={[
                 { value: 'Natural Gas', label: 'Natural Gas' },
                 { value: 'Dual Fuel', label: 'Dual Fuel' },
@@ -412,7 +412,7 @@ export default function PowerStations() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as PowerStation['status'] })}
               options={[
                 { value: 'Operational', label: 'Operational' },
                 { value: 'Partial', label: 'Partial Operation' },
@@ -493,7 +493,7 @@ export default function PowerStations() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as PowerStation['status'] })}
               options={[
                 { value: 'Operational', label: 'Operational' },
                 { value: 'Partial', label: 'Partial Operation' },
