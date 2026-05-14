@@ -7,7 +7,8 @@ import useFlyToCoordinates from '../../hooks/useFlyToCoordinates';
 import { setGasPlants, setAGGStations, setGasPipelines, setPowerStations } from '../../store/gasAssetsSlice';
 
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+
+// Note: access token is set inside the component so we can handle missing tokens gracefully in UI
 
 const defaultSymbolStyle = {
   'icon-size': 0.5,
@@ -18,6 +19,30 @@ const defaultSymbolStyle = {
 };
 
 export default function PipelineNetworkMap() {
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+
+  if (!mapboxToken) {
+    return (
+      <div className="h-full w-full flex items-center justify-center p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-xl text-center shadow">
+          <h3 className="text-lg font-semibold mb-2">Map unavailable</h3>
+          <p className="text-sm text-gray-600 mb-4">An API access token is required to render the map.</p>
+          <p className="text-xs text-gray-500">Set the <strong>VITE_MAPBOX_TOKEN</strong> environment variable in your deployment (for Vercel: Project Settings → Environment Variables) and redeploy.</p>
+          <a
+            className="inline-block mt-4 px-4 py-2 bg-[#00AD51] text-white rounded"
+            href="https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Mapbox token docs
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  mapboxgl.accessToken = mapboxToken;
+
   const dispatch = useDispatch();
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
