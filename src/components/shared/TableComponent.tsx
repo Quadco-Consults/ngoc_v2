@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { MoreVertical } from 'lucide-react';
 import Loader from './Loader';
 import Button from './Button';
