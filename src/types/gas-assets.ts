@@ -116,6 +116,7 @@ export interface LNGTerminal {
   feedGasSource: string[];
   exportDestinations: string[];
   commissionDate: string;
+  description?: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -1,11 +1,13 @@
 import { Building2, Factory, GitBranch, MapPin, Activity } from 'lucide-react';
 
+import type { FacilityStatus } from '../../../types/gas-assets';
+
 interface Asset {
   id: string;
   name: string;
   type: 'Gas Plant' | 'AGG Station' | 'Pipeline';
   operator: string;
-  status: 'operational' | 'maintenance' | 'offline';
+  status: FacilityStatus;
   location?: { lat: number; lng: number };
   capacity?: number;
   installedCapacity?: number;
