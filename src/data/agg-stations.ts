@@ -231,6 +231,7 @@ export const aggStationsData: AGGStation[] = [
     specification: {
       exportPressure: 1523,
     },
+    utilization: 0,
   },
   {
     id: 'agg-014',
@@ -253,7 +254,7 @@ export const aggStationsData: AGGStation[] = [
     operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Natural Gas',
-    processingType: 'Water Dew Point',
+    processingType: 'Water Dew Pointing',
     designCapacity: 110,
     availableCapacity: 110,
     dateCompleted: '2012',
@@ -282,6 +283,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'ALAKIRI GP Train 2',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'operational',
+    operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Natural Gas',
     processingType: 'Hydrocarbon Dew Point',
@@ -294,6 +296,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'CAWTHORNE CHANNEL GP Train 1',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'operational',
+    operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Condensate',
     processingType: 'Hydrocarbon Dew Point',
@@ -306,6 +309,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'CAWTHORNE CHANNEL GP Train 2',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'operational',
+    operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Condensate',
     processingType: 'Hydrocarbon Dew Point',
@@ -319,6 +323,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'NEMBE AG',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'operational',
+    operator: 'Unknown',
     numberOfTrains: 0,
     aggType: 'Natural Gas',
     processingType: 'N/A',
@@ -333,6 +338,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'AGBADA 1 BOOSTER',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'operational',
+    operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Natural Gas',
     processingType: 'Gas Compression only',
@@ -353,6 +359,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'AGBADA AGG',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'operational',
+    operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Natural Gas',
     processingType: 'Gas Compression and Processing (TEG Dehydration)',
@@ -372,6 +379,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'OGBIBO AGG',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'operational',
+    operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Natural Gas',
     processingType: 'Gas Compression and Processing (TEG Dehydration)',
@@ -391,6 +399,7 @@ export const aggStationsData: AGGStation[] = [
     name: 'NKALI BOOSTER',
     location: { lat: 0, lng: 0 }, // No coordinates provided
     status: 'offline',
+    operator: 'Unknown',
     numberOfTrains: 1,
     aggType: 'Natural Gas',
     processingType: 'Gas Compression only',
