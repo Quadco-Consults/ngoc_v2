@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Grid3x3, List, Building2 } from 'lucide-react';
 import type { RootState } from '../../store';
+import type { FacilityStatus } from '../../types/gas-assets';
 import PageHeader from '../../components/shared/PageHeader';
 import Button from '../../components/shared/Button';
 import AssetCard from './components/AssetCard';
@@ -16,7 +17,7 @@ interface Asset {
   name: string;
   type: 'Gas Plant' | 'AGG Station' | 'Pipeline';
   operator: string;
-  status: 'operational' | 'maintenance' | 'offline';
+  status: FacilityStatus;
   location?: { lat: number; lng: number };
   capacity?: number;
   installedCapacity?: number;
