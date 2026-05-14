@@ -298,7 +298,7 @@ export default function Maintenance() {
               label="Maintenance Type"
               required
               value={formData.maintenanceType || ''}
-              onChange={(e) => setFormData({ ...formData, maintenanceType: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, maintenanceType: e.target.value as MaintenanceRecord['maintenanceType'] })}
               options={[
                 { value: 'Preventive', label: 'Preventive' },
                 { value: 'Corrective', label: 'Corrective' },
@@ -317,7 +317,7 @@ export default function Maintenance() {
               label="Priority"
               required
               value={formData.priority || ''}
-              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, priority: e.target.value as MaintenanceRecord['priority'] })}
               options={[
                 { value: 'Critical', label: 'Critical' },
                 { value: 'High', label: 'High' },

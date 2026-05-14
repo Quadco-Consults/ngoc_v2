@@ -303,7 +303,7 @@ export default function Incidents() {
               label="Incident Type"
               required
               value={formData.incidentType || ''}
-              onChange={(e) => setFormData({ ...formData, incidentType: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, incidentType: e.target.value as Incident['incidentType'] })}
               options={[
                 { value: 'Safety', label: 'Safety' },
                 { value: 'Operational', label: 'Operational' },
@@ -315,7 +315,7 @@ export default function Incidents() {
               label="Severity"
               required
               value={formData.severity || ''}
-              onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, severity: e.target.value as Incident['severity'] })}
               options={[
                 { value: 'Critical', label: 'Critical' },
                 { value: 'Major', label: 'Major' },

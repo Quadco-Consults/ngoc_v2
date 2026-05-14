@@ -24,6 +24,7 @@ interface LNGTerminal {
   exportDestinations: string;
   commissionDate: string;
   lastMaintenance?: string;
+  description?: string;
 }
 
 // Mock data

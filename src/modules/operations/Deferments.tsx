@@ -349,7 +349,7 @@ export default function Deferments() {
               label="Deferment Type"
               required
               value={formData.defermentType || ''}
-              onChange={(e) => setFormData({ ...formData, defermentType: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, defermentType: e.target.value as Deferment['defermentType'] })}
               options={[
                 { value: 'Planned', label: 'Planned' },
                 { value: 'Unplanned', label: 'Unplanned' },
@@ -360,7 +360,7 @@ export default function Deferments() {
               label="Severity"
               required
               value={formData.severity || ''}
-              onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, severity: e.target.value as Deferment['severity'] })}
               options={[
                 { value: 'High', label: 'High' },
                 { value: 'Medium', label: 'Medium' },

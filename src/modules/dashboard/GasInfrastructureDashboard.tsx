@@ -224,7 +224,7 @@ export default function GasInfrastructureDashboard() {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {deliveryMarkets.map((entry, index) => (
+                {deliveryMarkets.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
