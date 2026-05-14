@@ -257,6 +257,7 @@ export const aggStationsData: AGGStation[] = [
     processingType: 'Water Dew Pointing',
     designCapacity: 110,
     availableCapacity: 110,
+    utilization: 0,
     dateCompleted: '2012',
     dateCommissioned: '2012',
     constructionCost: 948.4,

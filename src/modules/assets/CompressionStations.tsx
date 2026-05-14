@@ -133,7 +133,6 @@ export default function CompressionStations() {
   );
 
   const totalCapacity = mockStations.reduce((sum, s) => sum + s.totalCapacity, 0);
-  const totalThroughput = mockStations.reduce((sum, s) => sum + s.currentThroughput, 0);
   const operationalCount = mockStations.filter((s) => s.status === 'Operational').length;
   const avgEfficiency = (
     mockStations
@@ -396,7 +395,7 @@ export default function CompressionStations() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as CompressionStation['status'] })}
               options={[
                 { value: 'Operational', label: 'Operational' },
                 { value: 'Maintenance', label: 'Under Maintenance' },
@@ -469,7 +468,7 @@ export default function CompressionStations() {
               label="Status"
               required
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as CompressionStation['status'] })}
               options={[
                 { value: 'Operational', label: 'Operational' },
                 { value: 'Maintenance', label: 'Under Maintenance' },

@@ -1,11 +1,9 @@
-import { Flame, Factory, Workflow, TrendingUp, AlertTriangle, Gauge } from 'lucide-react';
+import { Flame, Factory, Workflow, AlertTriangle, Gauge } from 'lucide-react';
 import StatsCard from '../components/shared/StatsCard';
 import PageHeader from '../components/shared/PageHeader';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,

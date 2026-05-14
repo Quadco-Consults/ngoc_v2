@@ -241,7 +241,7 @@ export default function AGGStations() {
       {/* Map or Table View */}
       {viewMode === 'map' ? (
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <AGGStationsMap stations={filteredData} height="600px" />
+          <AGGStationsMap height="600px" />
           <div className="mt-4 text-sm text-gray-600">
             <p>
               Showing {filteredData.filter((s) => s.location.lat !== 0).length} stations with valid
