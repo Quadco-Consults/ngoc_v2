@@ -2,13 +2,20 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { Sun, Moon, Satellite } from 'lucide-react';
 import useGasAssetsDataSource from '../../hooks/useGasAssetsDataSource';
 import useFlyToCoordinates from '../../hooks/useFlyToCoordinates';
 import { setGasPlants, setAGGStations, setGasPipelines, setPowerStations } from '../../store/gasAssetsSlice';
+import { loadMapIcons } from './lib/images';
 
+// Map styles
+const MAP_STYLES = {
+  light: 'mapbox://styles/mapbox/light-v11',
+  dark: 'mapbox://styles/mapbox/dark-v11',
+  satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
+};
 
-
-// Note: access token is set inside the component so we can handle missing tokens gracefully in UI
+type MapStyle = keyof typeof MAP_STYLES;
 
 const defaultSymbolStyle = {
   'icon-size': 0.5,
@@ -18,38 +25,36 @@ const defaultSymbolStyle = {
   'text-offset': [0, 1.4],
 };
 
-export default function PipelineNetworkMap() {
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+interface PipelineNetworkMapProps {
+  networkStats?: {
+    totalLength: number;
+    totalCapacity: number;
+    totalFlow: number;
+    avgUtilization: string;
+  };
+}
+
+export default function PipelineNetworkMap({ networkStats }: PipelineNetworkMapProps) {
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
   if (!mapboxToken) {
-    return (
-      <div className="h-full w-full flex items-center justify-center p-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-xl text-center shadow">
-          <h3 className="text-lg font-semibold mb-2">Map unavailable</h3>
-          <p className="text-sm text-gray-600 mb-4">An API access token is required to render the map.</p>
-          <p className="text-xs text-gray-500">Set the <strong>VITE_MAPBOX_TOKEN</strong> environment variable in your deployment (for Vercel: Project Settings → Environment Variables) and redeploy.</p>
-          <a
-            className="inline-block mt-4 px-4 py-2 bg-[#00AD51] text-white rounded"
-            href="https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Mapbox token docs
-          </a>
-        </div>
-      </div>
-    );
+    console.error('VITE_MAPBOX_TOKEN is not set. Please add it to your .env.local file.');
   }
 
-  mapboxgl.accessToken = mapboxToken;
+  mapboxgl.accessToken = mapboxToken || '';
 
   const dispatch = useDispatch();
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapPopupRef = useRef<mapboxgl.Popup | null>(null);
+  const [hoveredAsset, setHoveredAsset] = useState<any>(null);
+  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
 
   const [isMapLoaded, setMapLoaded] = useState(false);
   const [isMapStyleLoaded, setMapStyleLoaded] = useState(false);
+  const [areIconsLoaded, setIconsLoaded] = useState(false);
+  const [currentMapStyle, setCurrentMapStyle] = useState<MapStyle>('light');
+  const [isStyleSwitching, setIsStyleSwitching] = useState(false);
 
   const flyToCoordinates = useFlyToCoordinates(mapRef);
 
@@ -65,28 +70,46 @@ export default function PipelineNetworkMap() {
     areDataSourcesReady,
   } = useGasAssetsDataSource();
 
-  const isMapFullyLoaded = isMapLoaded && isMapStyleLoaded && areDataSourcesReady;
+  const isMapFullyLoaded = isMapLoaded && isMapStyleLoaded && areIconsLoaded && areDataSourcesReady;
 
   // Load data
   useEffect(() => {
     const loadData = async () => {
-      const [plants, agg, pipelines, gtsPipelines, powerStations] = await Promise.all([
+      const [plants, agg, pipelines, gtsPipelines, powerStations, powerSupplyPipelines, majorPipelines] = await Promise.all([
         import('../../data/gas-plants'),
         import('../../data/agg-stations'),
         import('../../data/gas-pipelines'),
         import('../../data/gts-pipelines'),
         import('../../data/power-stations'),
+        import('../../data/power-supply-pipelines'),
+        import('../../data/major-pipelines'),
       ]);
 
       dispatch(setGasPlants(plants.gasPlantsData));
       dispatch(setAGGStations(agg.aggStationsData));
       dispatch(setPowerStations(powerStations.powerStationsData));
-      // Combine existing pipelines with detailed GTS pipelines
-      dispatch(setGasPipelines([...pipelines.gasPipelinesData, ...gtsPipelines.gtsPipelinesData]));
+      // Combine all pipeline data
+      dispatch(setGasPipelines([
+        ...pipelines.gasPipelinesData,
+        ...gtsPipelines.gtsPipelinesData,
+        ...powerSupplyPipelines.powerSupplyPipelines,
+        ...majorPipelines.majorPipelinesData,
+      ]));
     };
 
     loadData();
   }, [dispatch]);
+
+  // Switch map style
+  const switchMapStyle = (style: MapStyle) => {
+    if (!mapRef.current || isStyleSwitching) return;
+
+    setIsStyleSwitching(true);
+    setMapStyleLoaded(false);
+    setCurrentMapStyle(style);
+
+    mapRef.current.setStyle(MAP_STYLES[style]);
+  };
 
   // Initialize map
   useEffect(() => {
@@ -98,7 +121,7 @@ export default function PipelineNetworkMap() {
       zoom: 6,
       pitch: 0,
       attributionControl: false,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: MAP_STYLES.light,
     });
 
     const map = mapRef.current;
@@ -109,6 +132,7 @@ export default function PipelineNetworkMap() {
 
     map.on('style.load', () => {
       setMapStyleLoaded(true);
+      setIsStyleSwitching(false);
     });
 
     mapPopupRef.current = new mapboxgl.Popup({
@@ -117,15 +141,38 @@ export default function PipelineNetworkMap() {
       className: 'gas-asset-popup',
     });
 
-    map.on('click', () => {
-      mapPopupRef.current?.remove();
-    });
-
     return () => {
       map.remove();
       mapRef.current = null;
     };
   }, []);
+
+  // Load custom icons after map style loads
+  useEffect(() => {
+    if (!mapRef.current || !isMapStyleLoaded) return;
+
+    // Reset icon loaded state when switching styles
+    setIconsLoaded(false);
+
+    console.log('Starting to load map icons...');
+
+    loadMapIcons(mapRef.current, (loaded, total) => {
+      console.log(`Loading icons progress: ${loaded}/${total}`);
+    }).then((success) => {
+      console.log(`Icon loading completed. Success: ${success}`);
+      if (success) {
+        setIconsLoaded(true);
+        console.log('All map icons loaded successfully');
+      } else {
+        console.error('Failed to load some or all map icons');
+        // Still set to true to allow map to render
+        setIconsLoaded(true);
+      }
+    }).catch((error) => {
+      console.error('Error in loadMapIcons:', error);
+      setIconsLoaded(true);
+    });
+  }, [isMapStyleLoaded]);
 
   const handleMouseEnter = (e: mapboxgl.MapMouseEvent) => {
     if (!(e?.features?.[0]?.properties && e?.lngLat) || !mapRef.current) return;
@@ -143,9 +190,10 @@ export default function PipelineNetworkMap() {
 
     if (mapPopupRef.current) {
       const popupHTML = `
-        <div class="p-3">
+        <div class="p-3" style="min-width: 250px;">
           <h3 class="font-bold text-sm mb-2">${asset.name}</h3>
-          <div class="text-xs space-y-1">
+          <div class="text-xs space-y-1 mb-3">
+            ${asset.tag ? `<p><span class="text-gray-600">Type:</span> <span class="capitalize">${asset.tag.replace(/-/g, ' ')}</span></p>` : ''}
             ${asset.type ? `<p><span class="text-gray-600">Type:</span> ${asset.type}</p>` : ''}
             ${asset.operator ? `<p><span class="text-gray-600">Operator:</span> ${asset.operator}</p>` : ''}
             ${asset.installedCapacity ? `<p><span class="text-gray-600">Capacity:</span> ${asset.installedCapacity} MMSCFD</p>` : ''}
@@ -162,6 +210,20 @@ export default function PipelineNetworkMap() {
               }">${asset.status}</span>
             </p>
           </div>
+          <div class="flex flex-col gap-2 pt-2 border-t border-gray-200">
+            <button
+              onclick="window.location.href='#'"
+              class="w-full px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+            >
+              View Asset Details
+            </button>
+            <button
+              onclick="window.location.href='#'"
+              class="w-full px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+            >
+              Record Incident
+            </button>
+          </div>
         </div>
       `;
 
@@ -176,6 +238,25 @@ export default function PipelineNetworkMap() {
     if (mapRef.current) {
       mapRef.current.getCanvas().style.cursor = '';
     }
+  };
+
+  const handleAssetClick = (e: mapboxgl.MapMouseEvent) => {
+    if (!(e?.features?.[0]?.properties && e?.lngLat) || !mapRef.current) return;
+
+    const coordinates = [e.lngLat.lng, e.lngLat.lat];
+
+    // Switch to satellite view
+    if (currentMapStyle !== 'satellite') {
+      switchMapStyle('satellite');
+    }
+
+    // Zoom into the asset location
+    mapRef.current.flyTo({
+      center: coordinates as [number, number],
+      zoom: 16,
+      duration: 2000,
+      essential: true,
+    });
   };
 
   // Add layers when data is ready
@@ -194,44 +275,96 @@ export default function PipelineNetworkMap() {
       }
     };
 
-    const safelyAddLayer = (layer: any) => {
+    const safelyAddLayer = (layer: any, interactive: boolean = true) => {
       if (!map.getLayer(layer.id)) {
         try {
           map.addLayer(layer);
-          map.on('mouseenter', layer.id, handleMouseEnter);
-          map.on('mouseleave', layer.id, handleMouseLeave);
+          if (interactive) {
+            map.on('mouseenter', layer.id, handleMouseEnter);
+            map.on('mouseleave', layer.id, handleMouseLeave);
+            map.on('click', layer.id, handleAssetClick);
+          }
         } catch (e) {
           console.error(`Error adding layer ${layer.id}:`, e);
         }
       }
     };
 
-    // Add Gas Plants
+    // Add Gas Plants with clustering
     if (gasPlantGeoJSON?.all) {
-      safelyAddSource('gasplant-source', gasPlantGeoJSON.all);
+      safelyAddSource('gasplant-source', {
+        ...gasPlantGeoJSON.all,
+        cluster: true,
+        clusterMaxZoom: 12,
+        clusterRadius: 50,
+      });
+
+      // Cluster circles
       safelyAddLayer({
-        id: 'gasplant-layer',
+        id: 'gasplant-clusters',
         type: 'circle',
         source: 'gasplant-source',
+        filter: ['has', 'point_count'],
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            5, 4,
-            10, 8,
-            15, 12
-          ],
           'circle-color': [
-            'match',
-            ['get', 'status'],
-            'operational', '#10b981',
-            'maintenance', '#f59e0b',
-            'offline', '#6b7280',
-            '#3b82f6'
+            'step',
+            ['get', 'point_count'],
+            '#10b981',
+            5,
+            '#3b82f6',
+            10,
+            '#ef4444'
           ],
-          'circle-stroke-width': 2,
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            4,
+            5,
+            5,
+            10,
+            6
+          ],
+          'circle-stroke-width': 1,
           'circle-stroke-color': '#ffffff',
+        },
+      }, false);
+
+      // Cluster count labels
+      safelyAddLayer({
+        id: 'gasplant-cluster-count',
+        type: 'symbol',
+        source: 'gasplant-source',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      }, false);
+
+      // Unclustered point layer with custom icons
+      safelyAddLayer({
+        id: 'gasplant-layer',
+        type: 'symbol',
+        source: 'gasplant-source',
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'icon-image': [
+            'case',
+            ['==', ['get', 'status'], 'operational'],
+            'gas-plant-operational',
+            ['==', ['get', 'status'], 'maintenance'],
+            'gas-plant-maintenance',
+            ['==', ['get', 'status'], 'offline'],
+            'gas-plant-offline',
+            'gas-plant'
+          ],
+          'icon-size': 0.02,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
         },
       });
 
@@ -239,6 +372,7 @@ export default function PipelineNetworkMap() {
         id: 'gasplant-labels',
         type: 'symbol',
         source: 'gasplant-source',
+        minzoom: 8, // Only show labels at zoom 8+
         layout: {
           ...defaultSymbolStyle,
           'text-field': ['get', 'name'],
@@ -246,45 +380,101 @@ export default function PipelineNetworkMap() {
             'interpolate',
             ['linear'],
             ['zoom'],
-            5, 0,
-            7, 10,
-            10, 14,
+            8, 10,
+            10, 12,
+            14, 16,
           ],
         },
         paint: {
           'text-color': '#1f2937',
           'text-halo-color': '#ffffff',
-          'text-halo-width': 1,
-        },
-      });
-    }
-
-    // Add AGG Stations
-    if (aggStationGeoJSON?.all) {
-      safelyAddSource('agg-source', aggStationGeoJSON.all);
-      safelyAddLayer({
-        id: 'agg-layer',
-        type: 'circle',
-        source: 'agg-source',
-        paint: {
-          'circle-radius': [
+          'text-halo-width': 1.5,
+          'text-opacity': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            5, 3,
-            10, 6,
-            15, 10
+            8, 0.6,
+            10, 1,
           ],
+        },
+      }, false);
+    }
+
+    // Add AGG Stations with clustering
+    if (aggStationGeoJSON?.all) {
+      safelyAddSource('agg-source', {
+        ...aggStationGeoJSON.all,
+        cluster: true,
+        clusterMaxZoom: 12,
+        clusterRadius: 50,
+      });
+
+      // Cluster circles
+      safelyAddLayer({
+        id: 'agg-clusters',
+        type: 'circle',
+        source: 'agg-source',
+        filter: ['has', 'point_count'],
+        paint: {
           'circle-color': [
-            'match',
-            ['get', 'status'],
-            'operational', '#8b5cf6',
-            'maintenance', '#f59e0b',
-            'offline', '#6b7280',
-            '#a855f7'
+            'step',
+            ['get', 'point_count'],
+            '#8b5cf6',
+            5,
+            '#7c3aed',
+            10,
+            '#6d28d9'
           ],
-          'circle-stroke-width': 2,
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            3,
+            5,
+            4,
+            10,
+            5
+          ],
+          'circle-stroke-width': 1,
           'circle-stroke-color': '#ffffff',
+        },
+      }, false);
+
+      // Cluster count labels
+      safelyAddLayer({
+        id: 'agg-cluster-count',
+        type: 'symbol',
+        source: 'agg-source',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      }, false);
+
+      // Unclustered point layer with custom icons
+      safelyAddLayer({
+        id: 'agg-layer',
+        type: 'symbol',
+        source: 'agg-source',
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'icon-image': [
+            'case',
+            ['==', ['get', 'status'], 'operational'],
+            'agg-station-operational',
+            ['==', ['get', 'status'], 'maintenance'],
+            'agg-station-maintenance',
+            ['==', ['get', 'status'], 'offline'],
+            'agg-station-offline',
+            'agg-station'
+          ],
+          'icon-size': 0.02,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
         },
       });
 
@@ -292,6 +482,7 @@ export default function PipelineNetworkMap() {
         id: 'agg-labels',
         type: 'symbol',
         source: 'agg-source',
+        minzoom: 9, // Only show labels at zoom 9+
         layout: {
           ...defaultSymbolStyle,
           'text-field': ['get', 'name'],
@@ -299,45 +490,101 @@ export default function PipelineNetworkMap() {
             'interpolate',
             ['linear'],
             ['zoom'],
-            5, 0,
-            7, 9,
-            10, 12,
+            9, 9,
+            11, 11,
+            14, 14,
           ],
         },
         paint: {
           'text-color': '#581c87',
           'text-halo-color': '#ffffff',
-          'text-halo-width': 1,
+          'text-halo-width': 1.5,
+          'text-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            9, 0.6,
+            11, 1,
+          ],
         },
-      });
+      }, false);
     }
 
     // Add Power Stations
     if (powerStationGeoJSON?.all) {
-      safelyAddSource('power-source', powerStationGeoJSON.all);
+      safelyAddSource('power-source', {
+        ...powerStationGeoJSON.all,
+        cluster: true,
+        clusterMaxZoom: 12,
+        clusterRadius: 50,
+      });
+
+      // Cluster circles
       safelyAddLayer({
-        id: 'power-layer',
+        id: 'power-clusters',
         type: 'circle',
         source: 'power-source',
+        filter: ['has', 'point_count'],
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            5, 5,
-            10, 10,
-            15, 15
-          ],
           'circle-color': [
-            'match',
-            ['get', 'status'],
-            'operational', '#ef4444',
-            'maintenance', '#f59e0b',
-            'offline', '#6b7280',
-            '#dc2626'
+            'step',
+            ['get', 'point_count'],
+            '#ef4444',
+            5,
+            '#dc2626',
+            10,
+            '#b91c1c'
           ],
-          'circle-stroke-width': 2,
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            4,
+            5,
+            5,
+            10,
+            6
+          ],
+          'circle-stroke-width': 1,
           'circle-stroke-color': '#ffffff',
+        },
+      }, false);
+
+      // Cluster count labels
+      safelyAddLayer({
+        id: 'power-cluster-count',
+        type: 'symbol',
+        source: 'power-source',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      }, false);
+
+      // Unclustered point layer with custom icons
+      safelyAddLayer({
+        id: 'power-layer',
+        type: 'symbol',
+        source: 'power-source',
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'icon-image': [
+            'case',
+            ['==', ['get', 'status'], 'operational'],
+            'power-station-operational',
+            ['==', ['get', 'status'], 'maintenance'],
+            'power-station-maintenance',
+            ['==', ['get', 'status'], 'offline'],
+            'power-station-offline',
+            'power-station'
+          ],
+          'icon-size': 0.02,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
         },
       });
 
@@ -345,6 +592,7 @@ export default function PipelineNetworkMap() {
         id: 'power-labels',
         type: 'symbol',
         source: 'power-source',
+        minzoom: 8, // Only show labels at zoom 8+
         layout: {
           ...defaultSymbolStyle,
           'text-field': ['get', 'name'],
@@ -352,17 +600,24 @@ export default function PipelineNetworkMap() {
             'interpolate',
             ['linear'],
             ['zoom'],
-            5, 0,
-            7, 10,
-            10, 13,
+            8, 10,
+            10, 12,
+            14, 15,
           ],
         },
         paint: {
           'text-color': '#991b1b',
           'text-halo-color': '#ffffff',
-          'text-halo-width': 1,
+          'text-halo-width': 1.5,
+          'text-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            8, 0.6,
+            10, 1,
+          ],
         },
-      });
+      }, false);
     }
 
     // Add Pipelines
@@ -388,9 +643,9 @@ export default function PipelineNetworkMap() {
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                5, 2,
-                10, 4,
-                15, 6
+                5, 1,
+                10, 2,
+                15, 3
               ],
               'line-color': [
                 'match',
@@ -408,6 +663,37 @@ export default function PipelineNetworkMap() {
       });
     }
 
+    // Add cluster click handlers to zoom in
+    const clusterLayers = ['gasplant-clusters', 'agg-clusters', 'power-clusters'];
+    clusterLayers.forEach(layerId => {
+      if (map.getLayer(layerId)) {
+        map.on('click', layerId, (e: any) => {
+          const features = map.queryRenderedFeatures(e.point, {
+            layers: [layerId]
+          });
+          const clusterId = features[0].properties.cluster_id;
+          const source = map.getSource(layerId.replace('-clusters', '-source')) as mapboxgl.GeoJSONSource;
+
+          source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+            if (err) return;
+
+            map.easeTo({
+              center: (features[0].geometry as any).coordinates,
+              zoom: zoom
+            });
+          });
+        });
+
+        map.on('mouseenter', layerId, () => {
+          map.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.on('mouseleave', layerId, () => {
+          map.getCanvas().style.cursor = '';
+        });
+      }
+    });
+
     // Fly to first gas plant
     if (gasPlantGeoJSON?.all?.data?.features?.[0]) {
       const coords = gasPlantGeoJSON.all.data.features[0].geometry.coordinates;
@@ -418,6 +704,46 @@ export default function PipelineNetworkMap() {
   return (
     <div className="relative h-full w-full">
       <div ref={mapContainerRef} className="h-full w-full rounded-lg" />
+
+      {/* Map Style Switcher */}
+      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-2 flex gap-2">
+        <button
+          onClick={() => switchMapStyle('light')}
+          className={`p-2 rounded transition-colors ${
+            currentMapStyle === 'light'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+          title="Light Mode"
+          disabled={isStyleSwitching}
+        >
+          <Sun className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => switchMapStyle('dark')}
+          className={`p-2 rounded transition-colors ${
+            currentMapStyle === 'dark'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+          title="Dark Mode"
+          disabled={isStyleSwitching}
+        >
+          <Moon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => switchMapStyle('satellite')}
+          className={`p-2 rounded transition-colors ${
+            currentMapStyle === 'satellite'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+          title="Satellite Mode"
+          disabled={isStyleSwitching}
+        >
+          <Satellite className="w-5 h-5" />
+        </button>
+      </div>
 
       {/* Legend */}
       <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4 max-w-xs">
@@ -450,27 +776,30 @@ export default function PipelineNetworkMap() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4">
-        <div className="grid grid-cols-4 gap-4 text-xs">
-          <div>
-            <p className="text-gray-600">Plants</p>
-            <p className="text-lg font-bold">{gasPlantStats?.all || 0}</p>
-          </div>
-          <div>
-            <p className="text-gray-600">AGG Stations</p>
-            <p className="text-lg font-bold">{aggStationStats?.all || 0}</p>
-          </div>
-          <div>
-            <p className="text-gray-600">Power Stations</p>
-            <p className="text-lg font-bold">{powerStationStats?.all || 0}</p>
-          </div>
-          <div>
-            <p className="text-gray-600">Pipelines</p>
-            <p className="text-lg font-bold">{pipelineStats?.all || 0}</p>
+      {/* Pipeline Network Stats - Full Page View */}
+      {networkStats && (
+        <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4">
+          <h3 className="font-semibold text-sm mb-3">Network Overview</h3>
+          <div className="grid grid-cols-4 gap-4 text-xs">
+            <div>
+              <p className="text-gray-600">Total Length</p>
+              <p className="text-lg font-bold text-gray-900">{networkStats.totalLength.toLocaleString()} km</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Network Capacity</p>
+              <p className="text-lg font-bold text-gray-900">{networkStats.totalCapacity.toLocaleString()} MMSCF/D</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Current Throughput</p>
+              <p className="text-lg font-bold text-gray-900">{networkStats.totalFlow.toLocaleString()} MMSCF/D</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Avg Utilization</p>
+              <p className="text-lg font-bold text-green-600">{networkStats.avgUtilization}%</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -134,13 +134,13 @@ export default function AssetManagement() {
   }, [allAssets, gasPlants, aggStations, gasPipelines]);
 
   const handleAssetClick = (asset: Asset) => {
-    // Navigate to asset details
+    // Navigate to asset list pages (detail pages can be implemented later)
     if (asset.type === 'Gas Plant') {
-      navigate(`/assets/gas-plants?id=${asset.id}`);
+      navigate('/assets/plants');
     } else if (asset.type === 'AGG Station') {
-      navigate(`/assets/agg-stations?id=${asset.id}`);
-    } else {
-      navigate(`/assets/pipelines?id=${asset.id}`);
+      navigate('/assets/agg-stations');
+    } else if (asset.type === 'Pipeline') {
+      navigate('/assets/pipelines');
     }
   };
 

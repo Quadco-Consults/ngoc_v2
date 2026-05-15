@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Workflow, Activity, AlertCircle } from 'lucide-react';
+import { Workflow, Activity, AlertCircle, Map, FileText, AlertTriangle } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import Button from '../../components/shared/Button';
 import StatsCard from '../../components/shared/StatsCard';
 import PipelineNetworkMap from './PipelineNetworkMap';
+
+type TabType = 'map' | 'incidents' | 'reports';
 
 interface Pipeline {
   id: string;
@@ -87,6 +89,7 @@ const mockNodes: NetworkNode[] = [
 ];
 
 export default function PipelineNetwork() {
+  const [activeTab, setActiveTab] = useState<TabType>('map');
   const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
   const [selectedNode, setSelectedNode] = useState<NetworkNode | null>(null);
 
@@ -98,88 +101,103 @@ export default function PipelineNetwork() {
   const criticalPipelines = mockPipelines.filter((p) => p.status === 'Critical').length;
   const maintenancePipelines = mockPipelines.filter((p) => p.status === 'Maintenance').length;
 
+  const tabs = [
+    { id: 'map' as TabType, label: 'Network Map', icon: <Map className="w-4 h-4" /> },
+    { id: 'incidents' as TabType, label: 'Incidents', icon: <AlertTriangle className="w-4 h-4" /> },
+    { id: 'reports' as TabType, label: 'Reports', icon: <FileText className="w-4 h-4" /> },
+  ];
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Pipeline Network"
-        subtitle="National gas transmission network visualization and monitoring"
-        actions={
-          <>
-            <Button variant="outline">Export Network Data</Button>
-            <Button variant="primary">Real-time Monitor</Button>
-          </>
-        }
-      />
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatsCard
-          title="Total Pipeline Length"
-          value={`${totalLength.toLocaleString()} km`}
-          icon={<Workflow className="w-6 h-6" />}
-          color="primary"
-        />
-        <StatsCard
-          title="Network Capacity"
-          value={`${totalCapacity.toLocaleString()} MMSCF/D`}
-          color="secondary"
-        />
-        <StatsCard
-          title="Current Throughput"
-          value={`${totalFlow.toLocaleString()} MMSCF/D`}
-          color="success"
-        />
-        <StatsCard
-          title="Average Utilization"
-          value={`${avgUtilization}%`}
-          icon={<Activity className="w-6 h-6" />}
-          color="accent"
-        />
-      </div>
-
-      {/* Network Status Alerts */}
-      {(criticalPipelines > 0 || maintenancePipelines > 0) && (
-        <div className="space-y-3">
-          {criticalPipelines > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-red-900">Critical Pipeline Alert</h4>
-                  <p className="text-sm text-red-800 mt-1">
-                    {criticalPipelines} pipeline{criticalPipelines > 1 ? 's require' : ' requires'}{' '}
-                    immediate attention due to critical status.
-                  </p>
-                </div>
-              </div>
+    <div className="h-full flex flex-col">
+      {/* Compact Header with Tabs */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Pipeline Network</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                National gas transmission network visualization and monitoring
+              </p>
             </div>
-          )}
-          {maintenancePipelines > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-yellow-900">Maintenance in Progress</h4>
-                  <p className="text-sm text-yellow-800 mt-1">
-                    {maintenancePipelines} pipeline{maintenancePipelines > 1 ? 's are' : ' is'}{' '}
-                    currently under maintenance, affecting throughput capacity.
-                  </p>
-                </div>
-              </div>
+            <div className="flex gap-2">
+              <Button variant="outline">Export Network Data</Button>
+              <Button variant="primary">Real-time Monitor</Button>
             </div>
-          )}
-        </div>
-      )}
+          </div>
 
-      {/* Network Visualization */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="h-[600px]">
-          <PipelineNetworkMap />
+          {/* Tabs */}
+          <div className="flex gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors border-b-2 -mb-px ${
+                  activeTab === tab.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Pipeline Details Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Tab Content */}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'map' && (
+          <div className="h-full bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <PipelineNetworkMap
+              networkStats={{
+                totalLength,
+                totalCapacity,
+                totalFlow,
+                avgUtilization,
+              }}
+            />
+          </div>
+        )}
+
+        {activeTab === 'incidents' && (
+          <div className="space-y-6">
+            {/* Network Status Alerts */}
+            {(criticalPipelines > 0 || maintenancePipelines > 0) && (
+              <div className="space-y-3">
+                {criticalPipelines > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-red-900">Critical Pipeline Alert</h4>
+                        <p className="text-sm text-red-800 mt-1">
+                          {criticalPipelines} pipeline{criticalPipelines > 1 ? 's require' : ' requires'}{' '}
+                          immediate attention due to critical status.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {maintenancePipelines > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-yellow-900">Maintenance in Progress</h4>
+                        <p className="text-sm text-yellow-800 mt-1">
+                          {maintenancePipelines} pipeline{maintenancePipelines > 1 ? 's are' : ' is'}{' '}
+                          currently under maintenance, affecting throughput capacity.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Pipeline Details Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pipeline List */}
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-6 border-b border-gray-200">
@@ -277,69 +295,99 @@ export default function PipelineNetwork() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
+            </div>
+            </div>
 
-      {/* Pipeline Details Panel */}
-      {selectedPipeline && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Pipeline Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Pipeline Name</p>
-              <p className="font-medium text-gray-900">{selectedPipeline.name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Route</p>
-              <p className="font-medium text-gray-900">
-                {selectedPipeline.from} → {selectedPipeline.to}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Length / Diameter</p>
-              <p className="font-medium text-gray-900">
-                {selectedPipeline.length} km / {selectedPipeline.diameter}"
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Capacity</p>
-              <p className="font-medium text-gray-900">
-                {selectedPipeline.capacity.toLocaleString()} MMSCF/D
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Current Flow</p>
-              <p className="font-medium text-gray-900">
-                {selectedPipeline.currentFlow.toLocaleString()} MMSCF/D
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Utilization</p>
-              <p className="font-medium text-gray-900">
-                {((selectedPipeline.currentFlow / selectedPipeline.capacity) * 100).toFixed(1)}%
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Pressure</p>
-              <p className="font-medium text-gray-900">{selectedPipeline.pressure} PSI</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Status</p>
-              <span
-                className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                  selectedPipeline.status === 'Operational'
-                    ? 'bg-green-100 text-green-700'
-                    : selectedPipeline.status === 'Maintenance'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-red-100 text-red-700'
-                }`}
-              >
-                {selectedPipeline.status}
-              </span>
+            {/* Pipeline Details Panel */}
+            {selectedPipeline && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Pipeline Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Pipeline Name</p>
+                    <p className="font-medium text-gray-900">{selectedPipeline.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Route</p>
+                    <p className="font-medium text-gray-900">
+                      {selectedPipeline.from} → {selectedPipeline.to}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Length / Diameter</p>
+                    <p className="font-medium text-gray-900">
+                      {selectedPipeline.length} km / {selectedPipeline.diameter}"
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Capacity</p>
+                    <p className="font-medium text-gray-900">
+                      {selectedPipeline.capacity.toLocaleString()} MMSCF/D
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Current Flow</p>
+                    <p className="font-medium text-gray-900">
+                      {selectedPipeline.currentFlow.toLocaleString()} MMSCF/D
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Utilization</p>
+                    <p className="font-medium text-gray-900">
+                      {((selectedPipeline.currentFlow / selectedPipeline.capacity) * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Pressure</p>
+                    <p className="font-medium text-gray-900">{selectedPipeline.pressure} PSI</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Status</p>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                        selectedPipeline.status === 'Operational'
+                          ? 'bg-green-100 text-green-700'
+                          : selectedPipeline.status === 'Maintenance'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {selectedPipeline.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Network Reports</h3>
+            <p className="text-gray-600">
+              Comprehensive network reports and analytics will be displayed here.
+            </p>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">Daily Flow Report</h4>
+                <p className="text-sm text-gray-600">View daily gas flow statistics across the network</p>
+              </div>
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">Maintenance Schedule</h4>
+                <p className="text-sm text-gray-600">Planned maintenance activities and schedules</p>
+              </div>
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">Performance Metrics</h4>
+                <p className="text-sm text-gray-600">Network performance and efficiency metrics</p>
+              </div>
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">Incident Analysis</h4>
+                <p className="text-sm text-gray-600">Historical incident reports and trend analysis</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
