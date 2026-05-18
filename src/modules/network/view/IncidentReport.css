@@ -1,0 +1,13 @@
+.IncidentReport__popup {
+  width: 0;
+  height: 0;
+  padding: 0;
+}
+
+.IncidentReport__popup .mapboxgl-popup-tip {
+  display: none;
+}
+
+.IncidentReport__popup .mapboxgl-popup-content {
+  padding: 0;
+}

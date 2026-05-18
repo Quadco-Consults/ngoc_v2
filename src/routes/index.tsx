@@ -24,6 +24,7 @@ import Maintenance from '../modules/operations/Maintenance';
 import Incidents from '../modules/operations/Incidents';
 import Deferments from '../modules/operations/Deferments';
 import PipelineNetwork from '../modules/network/PipelineNetwork';
+// import PipelineNetworkIncidentReport from '../modules/network/view/IncidentReport';
 import AssetManagement from '../modules/asset-management/AssetManagement';
 import AnalyticsDashboard from '../modules/analytics/AnalyticsDashboard';
 import UserManagement from '../modules/users/UserManagement';
@@ -177,6 +178,11 @@ export const router = createBrowserRouter([
         path: 'users',
         element: <UserManagement />,
       },
+      // Incident report route commented out - requires oil upstream dependencies
+      // {
+      //   path: 'incident-report',
+      //   element: <PipelineNetworkIncidentReport />,
+      // },
     ],
   },
 ]);

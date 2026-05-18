@@ -5,8 +5,8 @@ import { useDispatch } from 'react-redux';
 import { Sun, Moon, Satellite } from 'lucide-react';
 import useGasAssetsDataSource from '../../hooks/useGasAssetsDataSource';
 import useFlyToCoordinates from '../../hooks/useFlyToCoordinates';
-import { setGasPlants, setAGGStations, setGasPipelines, setPowerStations } from '../../store/gasAssetsSlice';
-import { loadMapIcons } from './lib/images';
+import { setGasPlants, setAGGStations, setGasPipelines, setPowerStations, setCompressionStations, setMeteringStations, setJunctionNodes, setGasFields, setGasWells } from '../../store/gasAssetsSlice';
+import { loadMapIcons } from '../../utils/mapIcons';
 
 // Map styles
 const MAP_STYLES = {
@@ -63,6 +63,11 @@ export default function PipelineNetworkMap({ networkStats }: PipelineNetworkMapP
     aggStationGeoJSON,
     powerStationGeoJSON,
     pipelineGeoJSON,
+    compressionStationGeoJSON,
+    meteringStationGeoJSON,
+    junctionNodeGeoJSON,
+    gasFieldGeoJSON,
+    gasWellGeoJSON,
     gasPlantStats,
     aggStationStats,
     powerStationStats,
@@ -75,7 +80,20 @@ export default function PipelineNetworkMap({ networkStats }: PipelineNetworkMapP
   // Load data
   useEffect(() => {
     const loadData = async () => {
-      const [plants, agg, pipelines, gtsPipelines, powerStations, powerSupplyPipelines, majorPipelines] = await Promise.all([
+      const [
+        plants,
+        agg,
+        pipelines,
+        gtsPipelines,
+        powerStations,
+        powerSupplyPipelines,
+        majorPipelines,
+        compressionStations,
+        meteringStations,
+        junctionNodes,
+        gasFields,
+        gasWells,
+      ] = await Promise.all([
         import('../../data/gas-plants'),
         import('../../data/agg-stations'),
         import('../../data/gas-pipelines'),
@@ -83,11 +101,21 @@ export default function PipelineNetworkMap({ networkStats }: PipelineNetworkMapP
         import('../../data/power-stations'),
         import('../../data/power-supply-pipelines'),
         import('../../data/major-pipelines'),
+        import('../../data/compression-stations'),
+        import('../../data/metering-stations'),
+        import('../../data/junction-nodes'),
+        import('../../data/gas-fields'),
+        import('../../data/gas-wells'),
       ]);
 
       dispatch(setGasPlants(plants.gasPlantsData));
       dispatch(setAGGStations(agg.aggStationsData));
       dispatch(setPowerStations(powerStations.powerStationsData));
+      dispatch(setCompressionStations(compressionStations.compressionStationsData));
+      dispatch(setMeteringStations(meteringStations.meteringStationsData));
+      dispatch(setJunctionNodes(junctionNodes.junctionNodesData));
+      dispatch(setGasFields(gasFields.gasFieldsData));
+      dispatch(setGasWells(gasWells.gasWellsData));
       // Combine all pipeline data
       dispatch(setGasPipelines([
         ...pipelines.gasPipelinesData,
@@ -620,6 +648,243 @@ export default function PipelineNetworkMap({ networkStats }: PipelineNetworkMapP
       }, false);
     }
 
+    // Add Compression Stations
+    if (compressionStationGeoJSON?.all) {
+      safelyAddSource('compression-source', {
+        ...compressionStationGeoJSON.all,
+        cluster: false,
+      });
+
+      safelyAddLayer({
+        id: 'compression-layer',
+        type: 'circle',
+        source: 'compression-source',
+        paint: {
+          'circle-radius': 6,
+          'circle-color': [
+            'match',
+            ['get', 'status'],
+            'operational', '#8B4513',
+            'maintenance', '#FFBF00',
+            'offline', '#BD1B00',
+            '#8B4513'
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      safelyAddLayer({
+        id: 'compression-labels',
+        type: 'symbol',
+        source: 'compression-source',
+        minzoom: 8,
+        layout: {
+          ...defaultSymbolStyle,
+          'text-field': ['get', 'name'],
+          'text-size': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            8, 10,
+            10, 12,
+            14, 15,
+          ],
+        },
+        paint: {
+          'text-color': '#8B4513',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.5,
+          'text-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            8, 0.6,
+            10, 1,
+          ],
+        },
+      }, false);
+    }
+
+    // Add Junction Nodes
+    if (junctionNodeGeoJSON?.all) {
+      safelyAddSource('junction-source', {
+        ...junctionNodeGeoJSON.all,
+        cluster: false,
+      });
+
+      safelyAddLayer({
+        id: 'junction-layer',
+        type: 'circle',
+        source: 'junction-source',
+        paint: {
+          'circle-radius': 5,
+          'circle-color': '#4A5568',
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      safelyAddLayer({
+        id: 'junction-labels',
+        type: 'symbol',
+        source: 'junction-source',
+        minzoom: 10,
+        layout: {
+          ...defaultSymbolStyle,
+          'text-field': ['get', 'name'],
+          'text-size': 10,
+        },
+        paint: {
+          'text-color': '#4A5568',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.5,
+        },
+      }, false);
+    }
+
+    // Add Gas Fields
+    if (gasFieldGeoJSON?.all) {
+      safelyAddSource('gasfield-source', {
+        ...gasFieldGeoJSON.all,
+        cluster: true,
+        clusterMaxZoom: 10,
+        clusterRadius: 50,
+      });
+
+      // Clusters
+      safelyAddLayer({
+        id: 'gasfield-clusters',
+        type: 'circle',
+        source: 'gasfield-source',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#065f46',
+            5,
+            '#047857',
+            10,
+            '#059669'
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            4,
+            5,
+            5,
+            10,
+            6
+          ],
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#ffffff',
+        },
+      }, false);
+
+      // Cluster count
+      safelyAddLayer({
+        id: 'gasfield-cluster-count',
+        type: 'symbol',
+        source: 'gasfield-source',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      }, false);
+
+      // Individual fields
+      safelyAddLayer({
+        id: 'gasfield-layer',
+        type: 'circle',
+        source: 'gasfield-source',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': 7,
+          'circle-color': [
+            'match',
+            ['get', 'facility_status'],
+            'operational', '#065f46',
+            'producing', '#065f46',
+            'development', '#FFBF00',
+            'exploration', '#3B82F6',
+            'shut-in', '#BD1B00',
+            '#065f46'
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      safelyAddLayer({
+        id: 'gasfield-labels',
+        type: 'symbol',
+        source: 'gasfield-source',
+        minzoom: 9,
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          ...defaultSymbolStyle,
+          'text-field': ['get', 'name'],
+          'text-size': 11,
+        },
+        paint: {
+          'text-color': '#065f46',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.5,
+        },
+      }, false);
+    }
+
+    // Add Gas Wells (only show at high zoom)
+    if (gasWellGeoJSON?.all) {
+      safelyAddSource('gaswell-source', {
+        ...gasWellGeoJSON.all,
+        cluster: false,
+      });
+
+      safelyAddLayer({
+        id: 'gaswell-layer',
+        type: 'circle',
+        source: 'gaswell-source',
+        minzoom: 11, // Only show wells when zoomed in
+        paint: {
+          'circle-radius': 3,
+          'circle-color': [
+            'match',
+            ['get', 'type'],
+            'production', '#10b981',
+            'injection', '#3B82F6',
+            'exploration', '#FFBF00',
+            '#6B7280'
+          ],
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      safelyAddLayer({
+        id: 'gaswell-labels',
+        type: 'symbol',
+        source: 'gaswell-source',
+        minzoom: 13, // Only show labels when very zoomed in
+        layout: {
+          ...defaultSymbolStyle,
+          'text-field': ['get', 'name'],
+          'text-size': 9,
+        },
+        paint: {
+          'text-color': '#374151',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.5,
+        },
+      }, false);
+    }
+
     // Add Pipelines
     if (pipelineGeoJSON) {
       const pipelineTypes = [
@@ -664,7 +929,7 @@ export default function PipelineNetworkMap({ networkStats }: PipelineNetworkMapP
     }
 
     // Add cluster click handlers to zoom in
-    const clusterLayers = ['gasplant-clusters', 'agg-clusters', 'power-clusters'];
+    const clusterLayers = ['gasplant-clusters', 'agg-clusters', 'power-clusters', 'gasfield-clusters'];
     clusterLayers.forEach(layerId => {
       if (map.getLayer(layerId)) {
         map.on('click', layerId, (e: any) => {

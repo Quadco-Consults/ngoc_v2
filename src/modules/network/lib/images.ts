@@ -1,196 +1,168 @@
-import mapboxgl from 'mapbox-gl';
+import FlowstationPng from "../assets/imgs/flowstation.png";
+import FlowstationActivePng from "../assets/imgs/flowstation-active.png";
+import FlowstationInactivePng from "../assets/imgs/flowstation-inactive.png";
+import FlowstationMaintainancePng from "../assets/imgs/flowstation-maintainance.png";
 
-// Import all icon assets
-import flowstationPng from '../assets/imgs/flowstation.png';
-import flowstationActivePng from '../assets/imgs/flowstation-active.png';
-import flowstationInactivePng from '../assets/imgs/flowstation-inactive.png';
-import flowstationMaintainancePng from '../assets/imgs/flowstation-maintainance.png';
+import TerminalPng from "../assets/imgs/terminal.png";
+import TerminalActivePng from "../assets/imgs/terminal-active.png";
+import TerminalInactivePng from "../assets/imgs/terminal-inactive.png";
+import TerminalMaintainancePng from "../assets/imgs/terminal-maintainance.png";
 
-import terminalPng from '../assets/imgs/terminal.png';
-import terminalActivePng from '../assets/imgs/terminal-active.png';
-import terminalInactivePng from '../assets/imgs/terminal-inactive.png';
-import terminalMaintainancePng from '../assets/imgs/terminal-maintainance.png';
+import LactPointPng from "../assets/imgs/lactpoint.png";
+import LactPointActivePng from "../assets/imgs/lactpoint-active.png";
+import LactPointInactivePng from "../assets/imgs/lactpoint-inactive.png";
+import LactPointMaintainancePng from "../assets/imgs/lactpoint-maintainance.png";
 
-import manifoldPng from '../assets/imgs/manifold.png';
-import manifoldActivePng from '../assets/imgs/manifold-active.png';
-import manifoldInactivePng from '../assets/imgs/manifold-inactive.png';
-import manifoldMaintainancePng from '../assets/imgs/manifold-maintainance.png';
+import ManifoldPng from "../assets/imgs/manifold.png";
+import ManifoldActivePng from "../assets/imgs/manifold-active.png";
+import ManifoldInactivePng from "../assets/imgs/manifold-inactive.png";
+import ManifoldMaintainancePng from "../assets/imgs/manifold-maintainance.png";
 
-import lactpointPng from '../assets/imgs/lactpoint.png';
-import lactpointActivePng from '../assets/imgs/lactpoint-active.png';
-import lactpointInactivePng from '../assets/imgs/lactpoint-inactive.png';
-import lactpointMaintainancePng from '../assets/imgs/lactpoint-maintainance.png';
-
-// Map icon configuration
-export const MAP_ICONS = [
-  // Gas Plant icons (flowstation)
-  {
-    label: 'gas-plant',
-    width: 60,
-    height: 60,
-    url: flowstationPng,
-  },
-  {
-    label: 'gas-plant-operational',
-    width: 60,
-    height: 60,
-    url: flowstationActivePng,
-  },
-  {
-    label: 'gas-plant-maintenance',
-    width: 60,
-    height: 60,
-    url: flowstationMaintainancePng,
-  },
-  {
-    label: 'gas-plant-offline',
-    width: 60,
-    height: 60,
-    url: flowstationInactivePng,
-  },
-
-  // AGG Station icons (manifold)
-  {
-    label: 'agg-station',
-    width: 25,
-    height: 25,
-    url: manifoldPng,
-  },
-  {
-    label: 'agg-station-operational',
-    width: 25,
-    height: 25,
-    url: manifoldActivePng,
-  },
-  {
-    label: 'agg-station-maintenance',
-    width: 25,
-    height: 25,
-    url: manifoldMaintainancePng,
-  },
-  {
-    label: 'agg-station-offline',
-    width: 25,
-    height: 25,
-    url: manifoldInactivePng,
-  },
-
-  // Power Station icons (terminal)
-  {
-    label: 'power-station',
-    width: 60,
-    height: 60,
-    url: terminalPng,
-  },
-  {
-    label: 'power-station-operational',
-    width: 60,
-    height: 60,
-    url: terminalActivePng,
-  },
-  {
-    label: 'power-station-maintenance',
-    width: 60,
-    height: 60,
-    url: terminalMaintainancePng,
-  },
-  {
-    label: 'power-station-offline',
-    width: 60,
-    height: 60,
-    url: terminalInactivePng,
-  },
-
-  // LactPoint icons
-  {
-    label: 'lactpoint',
-    width: 25,
-    height: 25,
-    url: lactpointPng,
-  },
-  {
-    label: 'lactpoint-operational',
-    width: 25,
-    height: 25,
-    url: lactpointActivePng,
-  },
-  {
-    label: 'lactpoint-maintenance',
-    width: 25,
-    height: 25,
-    url: lactpointMaintainancePng,
-  },
-  {
-    label: 'lactpoint-offline',
-    width: 25,
-    height: 25,
-    url: lactpointInactivePng,
-  },
+export const IMAGES = [
+    {
+        label: "np-flowstation",
+        width: 60,
+        height: 60,
+        url: FlowstationPng,
+    },
+    {
+        label: "np-lactpoint",
+        width: 25,
+        height: 25,
+        url: LactPointPng,
+    },
+    {
+        label: "np-manifold",
+        width: 25,
+        height: 25,
+        url: ManifoldPng,
+    },
+    {
+        label: "np-terminal",
+        width: 60,
+        height: 60,
+        url: TerminalPng,
+    },
+    {
+        label: "np-flowstation-active",
+        width: 60,
+        height: 60,
+        url: FlowstationActivePng,
+    },
+    {
+        label: "np-lactpoint-active",
+        width: 25,
+        height: 25,
+        url: LactPointActivePng,
+    },
+    {
+        label: "np-manifold-active",
+        width: 25,
+        height: 25,
+        url: ManifoldActivePng,
+    },
+    {
+        label: "np-terminal-active",
+        width: 60,
+        height: 60,
+        url: TerminalActivePng,
+    },
+    {
+        label: "np-flowstation-inactive",
+        width: 60,
+        height: 60,
+        url: FlowstationInactivePng,
+    },
+    {
+        label: "np-lactpoint-inactive",
+        width: 25,
+        height: 25,
+        url: LactPointInactivePng,
+    },
+    {
+        label: "np-manifold-inactive",
+        width: 25,
+        height: 25,
+        url: ManifoldInactivePng,
+    },
+    {
+        label: "np-terminal-inactive",
+        width: 60,
+        height: 60,
+        url: TerminalInactivePng,
+    },
+    {
+        label: "np-flowstation-maintainance",
+        width: 60,
+        height: 60,
+        url: FlowstationMaintainancePng,
+    },
+    {
+        label: "np-lactpoint-maintainance",
+        width: 25,
+        height: 25,
+        url: LactPointMaintainancePng,
+    },
+    {
+        label: "np-manifold-maintainance",
+        width: 25,
+        height: 25,
+        url: ManifoldMaintainancePng,
+    },
+    {
+        label: "np-terminal-maintainance",
+        width: 60,
+        height: 60,
+        url: TerminalMaintainancePng,
+    },
+    // FPSO icons (using terminal images as fallback since no specific FPSO icons exist)
+    {
+        label: "np-fpso",
+        width: 60,
+        height: 60,
+        url: TerminalPng,
+    },
+    {
+        label: "np-fpso-active",
+        width: 60,
+        height: 60,
+        url: TerminalActivePng,
+    },
+    {
+        label: "np-fpso-inactive",
+        width: 60,
+        height: 60,
+        url: TerminalInactivePng,
+    },
+    {
+        label: "np-fpso-maintainance",
+        width: 60,
+        height: 60,
+        url: TerminalMaintainancePng,
+    },
+    // FSO icons (using terminal images as fallback since no specific FSO icons exist)
+    {
+        label: "np-fso",
+        width: 60,
+        height: 60,
+        url: TerminalPng,
+    },
+    {
+        label: "np-fso-active",
+        width: 60,
+        height: 60,
+        url: TerminalActivePng,
+    },
+    {
+        label: "np-fso-inactive",
+        width: 60,
+        height: 60,
+        url: TerminalInactivePng,
+    },
+    {
+        label: "np-fso-maintainance",
+        width: 60,
+        height: 60,
+        url: TerminalMaintainancePng,
+    },
 ];
-
-// Helper function to load images onto Mapbox map
-export const loadMapIcons = async (
-  map: mapboxgl.Map,
-  onProgress?: (loaded: number, total: number) => void
-): Promise<boolean> => {
-  let loadedCount = 0;
-  let successCount = 0;
-  const totalImages = MAP_ICONS.filter((img) => img.url).length;
-
-  const promises = MAP_ICONS.map(
-    (icon) =>
-      new Promise<void>((resolve) => {
-        if (!icon.url) {
-          loadedCount++;
-          resolve();
-          return;
-        }
-
-        if (map.hasImage(icon.label)) {
-          loadedCount++;
-          successCount++;
-          onProgress?.(loadedCount, totalImages);
-          resolve();
-          return;
-        }
-
-        map.loadImage(icon.url, (error, image) => {
-          loadedCount++;
-
-          if (error) {
-            console.error(`Error loading image ${icon.label} from ${icon.url}:`, error);
-            onProgress?.(loadedCount, totalImages);
-            resolve();
-            return;
-          }
-
-          if (!image) {
-            console.error(`No image returned for ${icon.label} from ${icon.url}`);
-            onProgress?.(loadedCount, totalImages);
-            resolve();
-            return;
-          }
-
-          try {
-            if (!map.hasImage(icon.label)) {
-              map.addImage(icon.label, image as any);
-              successCount++;
-              console.log(`Successfully loaded icon: ${icon.label}`);
-            } else {
-              successCount++;
-            }
-          } catch (e) {
-            console.error(`Error adding image ${icon.label}:`, e);
-          }
-
-          onProgress?.(loadedCount, totalImages);
-          resolve();
-        });
-      })
-  );
-
-  await Promise.all(promises);
-
-  console.log(`Loaded ${successCount} out of ${totalImages} icons`);
-  return successCount > 0;
-};

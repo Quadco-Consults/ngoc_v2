@@ -6,10 +6,15 @@ import {
   convertAGGStationsToGeoJSON,
   convertPowerStationsToGeoJSON,
   groupPipelinesByType,
+  convertCompressionStationsToGeoJSON,
+  convertMeteringStationsToGeoJSON,
+  convertJunctionNodesToGeoJSON,
+  convertGasFieldsToGeoJSON,
+  convertGasWellsToGeoJSON,
 } from '../utils/convertToGeoJSON';
 
 export default function useGasAssetsDataSource() {
-  const { gasPlants, aggStations, gasPipelines, powerStations } = useSelector(
+  const { gasPlants, aggStations, gasPipelines, powerStations, compressionStations, meteringStations, junctionNodes, gasFields, gasWells } = useSelector(
     (state: RootState) => state.gasAssets
   );
 
@@ -128,6 +133,71 @@ export default function useGasAssetsDataSource() {
     };
   }, [powerStations]);
 
+  // Convert Compression Stations to GeoJSON
+  const compressionStationGeoJSON = useMemo(() => {
+    if (!compressionStations || compressionStations.length === 0) return null;
+
+    const validStations = compressionStations.filter(
+      (station) => station.location && station.location.lat !== 0 && station.location.lng !== 0
+    );
+
+    return {
+      all: convertCompressionStationsToGeoJSON(validStations),
+    };
+  }, [compressionStations]);
+
+  // Convert Metering Stations to GeoJSON
+  const meteringStationGeoJSON = useMemo(() => {
+    if (!meteringStations || meteringStations.length === 0) return null;
+
+    const validStations = meteringStations.filter(
+      (station) => station.location && station.location.lat !== 0 && station.location.lng !== 0
+    );
+
+    return {
+      all: convertMeteringStationsToGeoJSON(validStations),
+    };
+  }, [meteringStations]);
+
+  // Convert Junction Nodes to GeoJSON
+  const junctionNodeGeoJSON = useMemo(() => {
+    if (!junctionNodes || junctionNodes.length === 0) return null;
+
+    const validNodes = junctionNodes.filter(
+      (node) => node.location && node.location.lat !== 0 && node.location.lng !== 0
+    );
+
+    return {
+      all: convertJunctionNodesToGeoJSON(validNodes),
+    };
+  }, [junctionNodes]);
+
+  // Convert Gas Fields to GeoJSON
+  const gasFieldGeoJSON = useMemo(() => {
+    if (!gasFields || gasFields.length === 0) return null;
+
+    const validFields = gasFields.filter(
+      (field) => field.location && field.location.lat !== 0 && field.location.lng !== 0
+    );
+
+    return {
+      all: convertGasFieldsToGeoJSON(validFields),
+    };
+  }, [gasFields]);
+
+  // Convert Gas Wells to GeoJSON
+  const gasWellGeoJSON = useMemo(() => {
+    if (!gasWells || gasWells.length === 0) return null;
+
+    const validWells = gasWells.filter(
+      (well) => well.location && well.location.lat !== 0 && well.location.lng !== 0
+    );
+
+    return {
+      all: convertGasWellsToGeoJSON(validWells),
+    };
+  }, [gasWells]);
+
   // Check if data sources are ready
   const areDataSourcesReady = Boolean(
     gasPlantGeoJSON && aggStationGeoJSON && pipelineGeoJSON && powerStationGeoJSON
@@ -138,6 +208,11 @@ export default function useGasAssetsDataSource() {
     aggStationGeoJSON,
     powerStationGeoJSON,
     pipelineGeoJSON,
+    compressionStationGeoJSON,
+    meteringStationGeoJSON,
+    junctionNodeGeoJSON,
+    gasFieldGeoJSON,
+    gasWellGeoJSON,
     gasPlantStats,
     aggStationStats,
     powerStationStats,

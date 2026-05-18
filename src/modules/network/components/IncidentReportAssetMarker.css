@@ -1,0 +1,13 @@
+.IncidentReportAssetMarker__popup {
+  width: auto;
+  height: 0;
+  padding: 0;
+}
+
+.IncidentReportAssetMarker__popup .mapboxgl-popup-tip {
+  display: none;
+}
+
+.IncidentReportAssetMarker__popup .mapboxgl-popup-content {
+  padding: 0;
+}

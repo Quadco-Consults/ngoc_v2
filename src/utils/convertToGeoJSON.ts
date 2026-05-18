@@ -1,5 +1,5 @@
 import { type Feature, type FeatureCollection, type Point, type LineString } from 'geojson';
-import type { GasPlant, AGGStation, GasPipeline, PowerStation } from '../types/gas-assets';
+import type { GasPlant, AGGStation, GasPipeline, PowerStation, CompressionStation, MeteringStation, JunctionNode, GasField, GasWell } from '../types/gas-assets';
 
 // Validate coordinates
 const isValidLngLat = (coordinates: [number, number]): boolean => {
@@ -220,5 +220,218 @@ export const groupPipelinesByType = (pipelines: GasPipeline[]) => {
       pipelines,
       type: 'distribution',
     }),
+  };
+};
+
+// Convert Compression Stations to GeoJSON
+export const convertCompressionStationsToGeoJSON = (
+  stations: CompressionStation[]
+): {
+  type: 'geojson';
+  data: FeatureCollection<Point, any>;
+} => {
+  const features: Feature<Point, any>[] = stations
+    .filter(
+      ({ location }) =>
+        location && isValidLngLat([location.lng, location.lat])
+    )
+    .map((station) => ({
+      type: 'Feature',
+      id: station.id,
+      geometry: {
+        type: 'Point',
+        coordinates: [station.location.lng, station.location.lat],
+      },
+      properties: {
+        id: station.id,
+        name: station.name,
+        operator: station.operator,
+        compressors: station.compressors,
+        capacity: station.capacity,
+        inletPressure: station.inletPressure,
+        outletPressure: station.outletPressure,
+        efficiency: station.efficiency,
+        status: station.status,
+        tag: 'compression-station',
+        facility_status: station.status,
+      },
+    }));
+
+  return {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features,
+    },
+  };
+};
+
+// Convert Metering Stations to GeoJSON
+export const convertMeteringStationsToGeoJSON = (
+  stations: MeteringStation[]
+): {
+  type: 'geojson';
+  data: FeatureCollection<Point, any>;
+} => {
+  const features: Feature<Point, any>[] = stations
+    .filter(
+      ({ location }) =>
+        location && isValidLngLat([location.lng, location.lat])
+    )
+    .map((station) => ({
+      type: 'Feature',
+      id: station.id,
+      geometry: {
+        type: 'Point',
+        coordinates: [station.location.lng, station.location.lat],
+      },
+      properties: {
+        id: station.id,
+        name: station.name,
+        operator: station.operator,
+        type: station.type,
+        flow: station.flow,
+        pressure: station.pressure,
+        temperature: station.temperature,
+        accuracy: station.accuracy,
+        status: station.status,
+        tag: 'metering-station',
+        facility_status: station.status,
+      },
+    }));
+
+  return {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features,
+    },
+  };
+};
+
+// Convert Junction Nodes to GeoJSON
+export const convertJunctionNodesToGeoJSON = (
+  nodes: JunctionNode[]
+): {
+  type: 'geojson';
+  data: FeatureCollection<Point, any>;
+} => {
+  const features: Feature<Point, any>[] = nodes
+    .filter(
+      ({ location }) =>
+        location && isValidLngLat([location.lng, location.lat])
+    )
+    .map((node) => ({
+      type: 'Feature',
+      id: node.id,
+      geometry: {
+        type: 'Point',
+        coordinates: [node.location.lng, node.location.lat],
+      },
+      properties: {
+        id: node.id,
+        name: node.name,
+        operator: node.operator,
+        type: node.type,
+        capacity: node.capacity,
+        pressure: node.pressure,
+        status: node.status,
+        tag: 'junction-node',
+        facility_status: node.status,
+      },
+    }));
+
+  return {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features,
+    },
+  };
+};
+
+// Convert Gas Fields to GeoJSON
+export const convertGasFieldsToGeoJSON = (
+  fields: GasField[]
+): {
+  type: 'geojson';
+  data: FeatureCollection<Point, any>;
+} => {
+  const features: Feature<Point, any>[] = fields
+    .filter(
+      ({ location }) =>
+        location && isValidLngLat([location.lng, location.lat])
+    )
+    .map((field) => ({
+      type: 'Feature',
+      id: field.id,
+      geometry: {
+        type: 'Point',
+        coordinates: [field.location.lng, field.location.lat],
+      },
+      properties: {
+        id: field.id,
+        name: field.name,
+        oml: field.oml,
+        operator: field.operator,
+        status: field.status,
+        currentProduction: field.currentProduction,
+        capacity: field.capacity,
+        wells: field.wells,
+        reserves: field.reserves.proven,
+        tag: 'gas-field',
+        facility_status: field.status === 'producing' ? 'operational' : field.status,
+      },
+    }));
+
+  return {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features,
+    },
+  };
+};
+
+// Convert Gas Wells to GeoJSON
+export const convertGasWellsToGeoJSON = (
+  wells: GasWell[]
+): {
+  type: 'geojson';
+  data: FeatureCollection<Point, any>;
+} => {
+  const features: Feature<Point, any>[] = wells
+    .filter(
+      ({ location }) =>
+        location && isValidLngLat([location.lng, location.lat])
+    )
+    .map((well) => ({
+      type: 'Feature',
+      id: well.id,
+      geometry: {
+        type: 'Point',
+        coordinates: [well.location.lng, well.location.lat],
+      },
+      properties: {
+        id: well.id,
+        name: well.name,
+        fieldName: well.fieldName,
+        type: well.type,
+        status: well.status,
+        production: well.production,
+        depth: well.depth,
+        pressure: well.pressure,
+        temperature: well.temperature,
+        tag: 'gas-well',
+        facility_status: well.status,
+      },
+    }));
+
+  return {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features,
+    },
   };
 };

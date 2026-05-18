@@ -10,6 +10,8 @@ import type {
   CompressionStation,
   MeteringStation,
   PowerStation,
+  GasField,
+  GasWell,
 } from '../types/gas-assets';
 
 interface GasAssetsState {
@@ -22,6 +24,8 @@ interface GasAssetsState {
   compressionStations: CompressionStation[];
   meteringStations: MeteringStation[];
   powerStations: PowerStation[];
+  gasFields: GasField[];
+  gasWells: GasWell[];
   loading: boolean;
   error: string | null;
 }
@@ -36,6 +40,8 @@ const initialState: GasAssetsState = {
   compressionStations: [],
   meteringStations: [],
   powerStations: [],
+  gasFields: [],
+  gasWells: [],
   loading: false,
   error: null,
 };
@@ -152,6 +158,22 @@ const gasAssetsSlice = createSlice({
       state.powerStations = state.powerStations.filter((station) => station.id !== action.payload);
     },
 
+    // Gas Fields
+    setGasFields: (state, action: PayloadAction<GasField[]>) => {
+      state.gasFields = action.payload;
+    },
+    addGasField: (state, action: PayloadAction<GasField>) => {
+      state.gasFields.push(action.payload);
+    },
+
+    // Gas Wells
+    setGasWells: (state, action: PayloadAction<GasWell[]>) => {
+      state.gasWells = action.payload;
+    },
+    addGasWell: (state, action: PayloadAction<GasWell>) => {
+      state.gasWells.push(action.payload);
+    },
+
     // Common
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -189,6 +211,10 @@ export const {
   addPowerStation,
   updatePowerStation,
   deletePowerStation,
+  setGasFields,
+  addGasField,
+  setGasWells,
+  addGasWell,
   setLoading,
   setError,
 } = gasAssetsSlice.actions;
